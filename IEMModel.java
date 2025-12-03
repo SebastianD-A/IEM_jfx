@@ -4,15 +4,106 @@ import java.util.*;
 import javafx.beans.property.*;
 import javafx.collections.*;
 
-public class IEMModel {
+public class IEMModel{
     private final Store store;
+
+    private final SimpleObjectProperty<Customer> customer = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<Order> order = new SimpleObjectProperty<>();
+    
+    private final SimpleIntegerProperty orderID = new SimpleIntegerProperty(1);
+    private final SimpleBooleanProperty isStaff = new SimpleBooleanProperty(false);
 
     public IEMModel(){
         this.store = new Store();
+        initProducts();
     }
 
     public Store getStore(){
         return store;
+    }
+    public boolean getIsStaff(){
+    return isStaff.get();
+    }
+
+    public void setIsStaff(boolean value){
+        isStaff.set(value);
+    }
+
+    public SimpleBooleanProperty isStaffProperty(){
+        return isStaff;
+    }
+
+    public Customer getCustomer(){
+        return customer.get();
+    }
+
+    public void setCustomer(Customer c){
+        customer.set(c);
+    }
+
+    public SimpleObjectProperty<Customer> customerProperty(){
+        return customer;
+    }
+
+    public Order getOrder(){
+        return order.get();
+    }
+
+    public void setOrder(Order ord){
+        order.set(ord);
+    }
+
+    public SimpleObjectProperty<Order> orderProperty(){
+        return order;
+    }
+
+    public int getOrderID(){
+        return orderID.get();
+    }
+
+    public void incrementOrderID(){
+        orderID.set(orderID.get() + 1);
+    }
+
+    public SimpleIntegerProperty orderIDProperty(){
+        return orderID;
+    }
+    void initProducts(){
+        InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, Driver.BA_DD_HYBRID, "Moondrop", SoundSignature.NEUTRAL);
+        InEarMonitor iem2 = new InEarMonitor("TruthEar Hexa", 999.99, Driver.TRIBID, "TruthEar", SoundSignature.WARM_NEUTRAL);
+        InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99,Driver.PLANAR, "7Hz", SoundSignature.BRIGHT);
+        InEarMonitor iem4 = new InEarMonitor("Moondrop Variations", 520.00,Driver.TRIBID, "Moondrop", SoundSignature.BRIGHT);
+        InEarMonitor iem5 = new InEarMonitor("Letshuoer S12", 119.00,Driver.PLANAR, "Letshuoer", SoundSignature.NEUTRAL);
+        InEarMonitor iem6 = new InEarMonitor("Kiwi Ears Quintet", 219.00, Driver.BA, "Kiwi Ears", SoundSignature.WARM_NEUTRAL);
+        InEarMonitor iem7 = new InEarMonitor("Tanchjim Oxygen", 269.00, Driver.DYNAMIC, "Tanchjim", SoundSignature.BRIGHT);
+        InEarMonitor iem8 = new InEarMonitor("Dunu SA6 MKII", 579.00, Driver.DUAL_DYNAMIC, "Dunu", SoundSignature.NEUTRAL);
+
+        CarryBag bag1 = new CarryBag("MoonDrop C2023", 59.99, "Moondrop", 10, 8, 5);
+        CarryBag bag2 = new CarryBag("Tripowin Case", 19.99, "Tripowin", 7, 6, 3);
+        CarryBag bag3 = new CarryBag("Dunu Pouch", 29.99, "Dunu", 8, 6, 4);
+        CarryBag bag4 = new CarryBag("Moondrop Little Black Case", 24.99, "Moondrop", 8, 7, 4);
+        CarryBag bag5 = new CarryBag("CCA Pro Case", 14.99, "CCA", 6, 5, 3);
+        CarryBag bag6 = new CarryBag("Dunu Hard Shell XL", 39.99, "Dunu", 12, 10, 6);
+        CarryBag bag7 = new CarryBag("FiiO Premium Case", 34.99, "FiiO", 9, 8, 5);
+        CarryBag bag8 = new CarryBag("Tripowin Traveler", 22.99, "Tripowin", 7, 6, 4);
+
+        store.addProduct(iem1, 10);
+        store.addProduct(iem2, 5);
+        store.addProduct(iem3, 15);
+        store.addProduct(iem4, 8);
+        store.addProduct(iem5, 12);
+        store.addProduct(iem6, 10);
+        store.addProduct(iem7, 6);
+        store.addProduct(iem8, 4);
+
+        store.addProduct(bag1, 20);
+        store.addProduct(bag3, 25);
+        store.addProduct(bag4, 40);
+        store.addProduct(bag5, 50);
+        store.addProduct(bag6, 15);
+        store.addProduct(bag7, 20);
+        store.addProduct(bag8, 35);
+        store.addProduct(bag2, 30);
     }
 }
 
@@ -112,26 +203,21 @@ abstract class Product implements Sellable{
 }
 
 class InEarMonitor extends Product{
-    private Driver[] drivers;
+    private Driver driver;
     private SoundSignature soundSignature;
 
     //compare
     static final Comparator<InEarMonitor> soundSignatureComparator = Comparator.comparing(InEarMonitor::getSound);
 
-    InEarMonitor(String name, double price, Driver[] drivers, String brand, SoundSignature soundSignature){
+    InEarMonitor(String name, double price, Driver driver, String brand, SoundSignature soundSignature){
         super(name, price, brand);
-        this.drivers = drivers;
+        this.driver = driver;
         this.soundSignature = soundSignature;
     }
 
-    String getDrivers(){
-        String listOfDrivers = "";
-        for (Driver driver : drivers){
-            listOfDrivers += driver;
-            listOfDrivers += ", ";
-        }
-        return listOfDrivers;
-        }
+    public Driver getDriver() {
+        return driver;
+    }
 
     public SoundSignature getSound(){
         return this.soundSignature;
@@ -139,7 +225,7 @@ class InEarMonitor extends Product{
 
     @Override
     public String toString(){
-        return super.toString() + "\nSound Signatures: " + this.soundSignature + "\nDrivers: " + getDrivers();
+        return super.toString() + "\nSound Signatures: " + this.soundSignature + "\nDrivers: " + getDriver();
     }
 }
 
