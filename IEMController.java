@@ -1,5 +1,7 @@
 package A2;
 
+import java.util.Map;
+
 public class IEMController {
     private final IEMModel model;
 
@@ -63,9 +65,43 @@ public class IEMController {
         model.incrementOrderID();
     }
 
-    public void addToCart(Product p, int qty){
-        model.getOrder().addProduct(p, qty);
+    private int getCartQuantity(Product p) {
+    if (model.getOrder().getCart().containsKey(p)) {
+        return model.getOrder().getCart().get(p);
+    } else {
+        return 0;
     }
+}
+    public void checkout() {
+        Order order = model.getOrder();
+
+        for (Map.Entry<Product, Integer> entry : order.getCart().entrySet()) {
+            Product p = entry.getKey();
+            int qty = entry.getValue();
+
+            model.getStore().sellProduct(p.getNameValue(), qty);
+        }
+    }
+    public void addToCart(Product product, String qtyString) {
+        int qtyToAdd = convertStringToInt(qtyString);
+        if (qtyToAdd <= 0){
+            return;
+        }
+
+        int storeStock = model.getStore().getQuantity(product);
+        int cartQty = getCartQuantity(product);
+
+        int available = storeStock - cartQty;
+
+        if (qtyToAdd > available) {
+            System.out.println("Not enough stock. Only " + available + " available.");
+            return;
+        }
+
+        // safe to add
+        model.getOrder().addProduct(product, qtyToAdd);
+    }
+    
 
     public void removeFromCart(Product p, int qty){
         model.getOrder().removeProduct(p, qty);

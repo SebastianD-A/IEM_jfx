@@ -492,6 +492,36 @@ class StockItem{
 class Store{
     private final ObservableList<StockItem> stock = FXCollections.observableArrayList();
 
+    public ObservableList<StockItem> getCarryBagList(){
+        ObservableList<StockItem> carryBagList= FXCollections.observableArrayList();
+            for (StockItem item : getStock()){
+                if (item.getProduct() instanceof CarryBag){
+                    carryBagList.add(item);
+                }
+            }
+        return carryBagList;
+    }
+
+    public ObservableList<StockItem> getIEMList(){
+        ObservableList<StockItem> IEMList= FXCollections.observableArrayList();
+            for (StockItem item : getStock()){
+                if (item.getProduct() instanceof InEarMonitor){
+                    IEMList.add(item);
+                }
+            }
+        return IEMList;
+    }
+
+    public ObservableList<StockItem> getFilteredByBrandList(String brand, ObservableList<StockItem> productList){
+        ObservableList<StockItem> filteredList = FXCollections.observableArrayList();
+        for (StockItem item : productList){
+            if (item.getProduct().getBrandValue().equals(brand)){
+                filteredList.add(item);
+            }
+        }
+        
+        return filteredList;
+    }
     public void addProduct(Product newProduct, int quantity){
         if (quantity <= 0){
             return;

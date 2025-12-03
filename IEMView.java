@@ -1,7 +1,6 @@
 package A2;
 
 import javax.swing.text.LabelView;
-
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,6 +15,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -44,7 +45,22 @@ public class IEMView {
 
 
     }
-
+    //configure text fields
+    private void configTextFieldForInts(TextField field) {
+        field.setTextFormatter(new TextFormatter<Integer>((Change c) -> {
+            // "-?\\d*" is called a regular expression. For those who are curious:
+            //
+            // - The "-?" indicates that the minus sign is optionally present (we need to
+            // allow for negative integers too)
+            // - "\\d" is a digit character, which matches any digit from 0 to 9.
+            // - The following "*" is a quantifier that means "zero or more occurrences".
+            // - Therefore, \\d* matches a sequence of zero or more digits.
+            if (c.getControlNewText().matches("-?\\d*")) {
+                return c;
+            }
+            return null;
+        }));
+    }
     public Parent asParent(){
         return view;
     }
@@ -159,15 +175,8 @@ public class IEMView {
 
             Label title = new Label("Carry Bags");
 
-            ObservableList<StockItem> carryBagList= FXCollections.observableArrayList();
-            for (StockItem item : model.getStore().getStock()){
-                if (item.getProduct() instanceof CarryBag){
-                    carryBagList.add(item);
-                }
-            }
-
             TableView<StockItem> table = new TableView<>();
-            table.setItems(carryBagList);
+            table.setItems(model.getStore().getCarryBagList());
 
             TableColumn<StockItem, String> nameCol = new TableColumn<>("Name");
             nameCol.setCellValueFactory(c -> c.getValue().getProduct().getNameProperty());
@@ -179,7 +188,7 @@ public class IEMView {
             priceCol.setCellValueFactory(c -> c.getValue().getProduct().getPriceProperty());
 
             TableColumn<StockItem, Number> lengthCol = new TableColumn<>("Length");
-    lengthCol.setCellValueFactory(cellData -> new SimpleDoubleProperty(((CarryBag) cellData.getValue().getProduct()).getLengthValue()));
+            lengthCol.setCellValueFactory(cellData -> new SimpleDoubleProperty(((CarryBag) cellData.getValue().getProduct()).getLengthValue()));
 
             TableColumn<StockItem, Number> widthCol = new TableColumn<>("Width");
             widthCol.setCellValueFactory(cellData -> new SimpleDoubleProperty(((CarryBag) cellData.getValue().getProduct()).getWidthValue()));
@@ -192,23 +201,96 @@ public class IEMView {
 
             table.getColumns().addAll(nameCol, brandCol, priceCol, lengthCol, widthCol, heightCol, volumeCol);
 
-            root.getChildren().addAll(title, table);
+            Button sortByBrandBtn = new Button("Sort by Brand");
+            sortByBrandBtn.setOnAction(event -> {
+
+                table.setItems(model.getStore().getFilteredByBrandList(null, model.getStore().getCarryBagList()));
+            });
+
+            Label filterBrandLabel = new Label("Filter by Brand:");
+            
+            ToggleGroup brandGroup = new ToggleGroup();
+
+            RadioButton moondropBtn = new RadioButton("Moondrop");
+            moondropBtn.setToggleGroup(brandGroup);
+
+            RadioButton tripowinBtn = new RadioButton("Tripowin");
+            tripowinBtn.setToggleGroup(brandGroup);
+
+            RadioButton dunuBtn = new RadioButton("Dunu");
+            dunuBtn.setToggleGroup(brandGroup);
+
+            RadioButton ccaBtn = new RadioButton("CCA");
+            ccaBtn.setToggleGroup(brandGroup);
+
+            RadioButton fiioBtn = new RadioButton("FiiO");
+            fiioBtn.setToggleGroup(brandGroup);
+            
+            HBox brandRow = new HBox(5, moondropBtn, tripowinBtn, dunuBtn, ccaBtn, fiioBtn);
+            brandRow.setAlignment(Pos.CENTER);
+
+            Button filterByBrandBtn = new Button("Filter by brand");
+            filterByBrandBtn.setOnAction(event -> {
+            String chosenBrand = null;
+
+            if (moondropBtn.isSelected()) {
+                chosenBrand = "Moondrop";
+            }
+            else if (tripowinBtn.isSelected()) {
+                chosenBrand = "Tripowin";
+            }
+            else if (dunuBtn.isSelected()) {
+                chosenBrand = "Dunu";
+            }
+            else if (ccaBtn.isSelected()) {
+                chosenBrand = "CCA";
+            }
+            else if (fiioBtn.isSelected()) {
+                chosenBrand = "FiiO";
+            }
+            else {
+                return;
+            }
+            table.setItems(model.getStore().getFilteredByBrandList(chosenBrand, model.getStore().getCarryBagList()));
+            });
+
+            
+            TextField itemQtyField = new TextField();
+            configTextFieldForInts(itemQtyField);
+
+            HBox addToCartRow = new HBox(5, new Label("Quantity"), itemQtyField);
+            addToCartRow.setAlignment(Pos.CENTER);
+
+            Button addToCartBtn = new Button("Add to cart");
+            addToCartBtn.setOnAction(event -> {
+                StockItem selected = table.getSelectionModel().getSelectedItem();
+
+                if (selected == null){
+                    return;
+                }
+
+                Product item = selected.getProduct();
+
+                String qtyString = itemQtyField.getText().trim();
+
+                if (qtyString.isEmpty()){
+                    return;
+                }
+
+                controller.addToCart(item, qtyString);
+                
+            });
+
+            root.getChildren().addAll(title, table, filterBrandLabel, brandRow, filterByBrandBtn, addToCartRow, addToCartBtn);
         }
         //setup IEM table for customer view
         private void showIEMTableInPopup(VBox root, Stage popup) {
             root.getChildren().clear();
 
             Label title = new Label("In-Ear Monitor Products");
-            ObservableList<StockItem> iemList = FXCollections.observableArrayList();
-            
-            for (StockItem item : model.getStore().getStock()){
-                if (item.getProduct() instanceof InEarMonitor){
-                    iemList.add(item);
-                }
-            }
 
             TableView<StockItem> table = new TableView<>();
-            table.setItems(iemList);
+            table.setItems(model.getStore().getIEMList());
 
             TableColumn<StockItem, String> nameCol = new TableColumn<>("Name");
             nameCol.setCellValueFactory(cellData -> cellData.getValue().getProduct().getNameProperty());
@@ -227,6 +309,13 @@ public class IEMView {
             
             table.getColumns().addAll(nameCol, brandCol, priceCol, driverCol, soundCol);
 
+            //buttons
+            Button sortBySoundSigBtn = new Button("Sort by Sound Signature");
+
+            Button sortByBrandBtn = new Button("Sort by Brand");
+
+            Button addToCartBtn = new Button("Add to cart");
+
             root.getChildren().addAll(title, table);
         }
     private void custViewProducts(){
@@ -234,7 +323,7 @@ public class IEMView {
         stage.initOwner(primaryStage);
         stage.initModality(Modality.APPLICATION_MODAL);
 
-        VBox root = new VBox();
+        VBox root = new VBox(10);
         root.setAlignment(Pos.CENTER);
 
         //type of product to show
@@ -261,7 +350,7 @@ public class IEMView {
         
         root.getChildren().addAll(productOptions, doneButton);
         
-        Scene scene = new Scene(root, 500, 500);
+        Scene scene = new Scene(root, 700, 700);
 
         stage.setScene(scene);
         stage.show();
@@ -276,3 +365,4 @@ public class IEMView {
     //Staff menus
     private void staffMenu(){}
 }
+
