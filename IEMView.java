@@ -199,6 +199,7 @@ public class IEMView {
             TableColumn<StockItem, Number> volumeCol = new TableColumn<>("Volume");
             volumeCol.setCellValueFactory(cellData -> new SimpleDoubleProperty(((CarryBag) cellData.getValue().getProduct()).getVolume()));
 
+
             table.getColumns().addAll(nameCol, brandCol, priceCol, lengthCol, widthCol, heightCol, volumeCol);
 
             Button sortByBrandBtn = new Button("Sort by Brand");
@@ -210,6 +211,9 @@ public class IEMView {
             Label filterBrandLabel = new Label("Filter by Brand:");
             
             ToggleGroup brandGroup = new ToggleGroup();
+
+            RadioButton allBrandBtn = new RadioButton("All");
+            allBrandBtn.setToggleGroup(brandGroup);
 
             RadioButton moondropBtn = new RadioButton("Moondrop");
             moondropBtn.setToggleGroup(brandGroup);
@@ -226,7 +230,7 @@ public class IEMView {
             RadioButton fiioBtn = new RadioButton("FiiO");
             fiioBtn.setToggleGroup(brandGroup);
             
-            HBox brandRow = new HBox(5, moondropBtn, tripowinBtn, dunuBtn, ccaBtn, fiioBtn);
+            HBox brandRow = new HBox(5, allBrandBtn, moondropBtn, tripowinBtn, dunuBtn, ccaBtn, fiioBtn);
             brandRow.setAlignment(Pos.CENTER);
 
             Button filterByBrandBtn = new Button("Filter by brand");
@@ -236,18 +240,28 @@ public class IEMView {
             if (moondropBtn.isSelected()) {
                 chosenBrand = "Moondrop";
             }
+
+            else if (allBrandBtn.isSelected()) {
+                table.setItems(model.getStore().getCarryBagList());
+                return;
+            }
+
             else if (tripowinBtn.isSelected()) {
                 chosenBrand = "Tripowin";
             }
+
             else if (dunuBtn.isSelected()) {
                 chosenBrand = "Dunu";
             }
+
             else if (ccaBtn.isSelected()) {
                 chosenBrand = "CCA";
             }
+
             else if (fiioBtn.isSelected()) {
                 chosenBrand = "FiiO";
             }
+
             else {
                 return;
             }
@@ -263,7 +277,7 @@ public class IEMView {
 
             Button addToCartBtn = new Button("Add to cart");
             addToCartBtn.setOnAction(event -> {
-                StockItem selected = table.getSelectionModel().getSelectedItem();
+                StockItem selected = model.getStore().getCarryBagList().get(table.getSelectionModel().getSelectedIndex());
 
                 if (selected == null){
                     return;
@@ -309,14 +323,167 @@ public class IEMView {
             
             table.getColumns().addAll(nameCol, brandCol, priceCol, driverCol, soundCol);
 
-            //buttons
-            Button sortBySoundSigBtn = new Button("Sort by Sound Signature");
+                //filter by Soundsg
+            Label filterSoundSigLabel = new Label("Filter by Sound Signature:");
 
-            Button sortByBrandBtn = new Button("Sort by Brand");
+            ToggleGroup soundSignatureGroup = new ToggleGroup();
+
+            RadioButton allSoundSignatureBtn = new RadioButton("All");
+            allSoundSignatureBtn.setToggleGroup(soundSignatureGroup);
+
+            RadioButton neutralBtn = new RadioButton("Neutral");
+            neutralBtn.setToggleGroup(soundSignatureGroup);
+
+            RadioButton bassyBtn = new RadioButton("Bassy");
+            bassyBtn.setToggleGroup(soundSignatureGroup);
+
+            RadioButton brightBtn = new RadioButton("Bright");
+            brightBtn.setToggleGroup(soundSignatureGroup);
+
+            RadioButton brightNeutralBtn = new RadioButton("Bright Neutral");
+            brightNeutralBtn.setToggleGroup(soundSignatureGroup);
+
+            RadioButton vShapeBtn = new RadioButton("V-Shape");
+            vShapeBtn.setToggleGroup(soundSignatureGroup);
+
+            RadioButton warmNeutralBtn = new RadioButton("Warm Neutral");
+            warmNeutralBtn.setToggleGroup(soundSignatureGroup);
+
+            HBox soundSignatureRow = new HBox(5,allSoundSignatureBtn ,neutralBtn, bassyBtn, brightBtn, brightNeutralBtn, vShapeBtn, warmNeutralBtn);
+            soundSignatureRow.setAlignment(Pos.CENTER);
+
+
+            Button filterBySoundSigBtn = new Button("filter by Sound Signature");
+            filterBySoundSigBtn.setOnAction(event -> {
+            SoundSignature chosenSoundSignature = null;
+
+            if (neutralBtn.isSelected()) {
+                chosenSoundSignature = SoundSignature.NEUTRAL;
+            }
+            else if (allSoundSignatureBtn.isSelected()){
+                table.setItems(model.getStore().getIEMList());
+                return;
+            }
+            else if (bassyBtn.isSelected()) {
+                chosenSoundSignature = SoundSignature.BASSY;
+            }
+            else if (brightBtn.isSelected()) {
+                chosenSoundSignature = SoundSignature.BRIGHT;
+            }
+            else if (brightNeutralBtn.isSelected()) {
+                chosenSoundSignature = SoundSignature.BRIGHT_NEUTRAL;
+            }
+            else if (vShapeBtn.isSelected()) {
+                chosenSoundSignature = SoundSignature.V_SHAPE;
+            }
+            else if (warmNeutralBtn.isSelected()) {
+                chosenSoundSignature = SoundSignature.WARM_NEUTRAL;
+            }
+            
+            if (chosenSoundSignature != null) {
+                table.setItems(model.getStore().getFilteredBySoundSignatureList(chosenSoundSignature));
+            }
+        });
+                //filter by brand
+            Label filterBrandLabel = new Label("Filter by Brand:");
+            
+            ToggleGroup brandGroup = new ToggleGroup();
+
+            RadioButton allBrandBtn = new RadioButton("All");
+            allBrandBtn.setToggleGroup(brandGroup);
+
+            RadioButton moondropBtn = new RadioButton("Moondrop");
+            moondropBtn.setToggleGroup(brandGroup);
+
+            RadioButton truthearBtn = new RadioButton("TruthEar");
+            truthearBtn.setToggleGroup(brandGroup);
+
+            RadioButton hz7Btn = new RadioButton("7Hz");
+            hz7Btn.setToggleGroup(brandGroup);
+
+            RadioButton letshuoerBtn = new RadioButton("Letshuoer");
+            letshuoerBtn.setToggleGroup(brandGroup);
+
+            RadioButton kiwiiearsBtn = new RadioButton("Kiwi Ears");
+            kiwiiearsBtn.setToggleGroup(brandGroup);
+
+            RadioButton tanchjimBtn = new RadioButton("Tanchjim");
+            tanchjimBtn.setToggleGroup(brandGroup);
+
+            RadioButton dunuBtn = new RadioButton("Dunu");
+            dunuBtn.setToggleGroup(brandGroup);
+            
+            HBox brandRow = new HBox(5, allBrandBtn,moondropBtn, truthearBtn, hz7Btn, letshuoerBtn, kiwiiearsBtn, tanchjimBtn, dunuBtn);
+            brandRow.setAlignment(Pos.CENTER);
+
+            Button filterByBrandBtn = new Button("Filter by brand");
+
+            filterByBrandBtn.setOnAction(event -> {
+                String chosenBrand = null;
+
+                if (moondropBtn.isSelected()) {
+                    chosenBrand = "Moondrop";
+                }
+                else if (allBrandBtn.isSelected()){
+                    table.setItems(model.getStore().getIEMList());
+                    return;
+                }
+                else if (truthearBtn.isSelected()) {
+                    chosenBrand = "TruthEar";
+                }
+
+                else if (hz7Btn.isSelected()) {
+                    chosenBrand = "7Hz";
+                }
+
+                else if (letshuoerBtn.isSelected()) {
+                    chosenBrand = "Letshuoer";
+                }
+
+                else if (kiwiiearsBtn.isSelected()) {
+                    chosenBrand = "Kiwi Ears";
+                }
+
+                else if (tanchjimBtn.isSelected()) {
+                    chosenBrand = "Tanchjim";
+                }
+
+                else if (dunuBtn.isSelected()) {
+                    chosenBrand = "Dunu";
+                }
+
+                else {
+                    return;
+                }
+
+                table.setItems(model.getStore().getFilteredByBrandList(chosenBrand, model.getStore().getIEMList()));
+            });
+            //add to cart
+            TextField itemQtyField = new TextField();
+            configTextFieldForInts(itemQtyField);
+            HBox itemQtyRow = new HBox(5, new Label("Quantity: "), itemQtyField);
+            itemQtyRow.setAlignment(Pos.CENTER);
 
             Button addToCartBtn = new Button("Add to cart");
+            addToCartBtn.setOnAction(event -> {
+                StockItem selected = model.getStore().getCarryBagList().get(table.getSelectionModel().getSelectedIndex());
 
-            root.getChildren().addAll(title, table);
+                if (selected == null){
+                    return;
+                }
+
+                Product item = selected.getProduct();
+
+                String qtyString = itemQtyField.getText().trim();
+
+                if (qtyString.isEmpty()){
+                    return;
+                }
+
+                controller.addToCart(item, qtyString);
+                
+            });
+            root.getChildren().addAll(title, table, filterSoundSigLabel, soundSignatureRow, filterBySoundSigBtn,filterBrandLabel, brandRow, filterByBrandBtn, itemQtyRow, addToCartBtn);
         }
     private void custViewProducts(){
         Stage stage = new Stage();

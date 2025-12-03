@@ -65,10 +65,11 @@ public class IEMController {
         model.incrementOrderID();
     }
 
-    private int getCartQuantity(Product p) {
+    public int getCartQuantity(Product p) {
     if (model.getOrder().getCart().containsKey(p)) {
         return model.getOrder().getCart().get(p);
-    } else {
+    } 
+    else {
         return 0;
     }
 }

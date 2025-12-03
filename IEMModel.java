@@ -69,14 +69,14 @@ public class IEMModel{
         return orderID;
     }
     void initProducts(){
-        InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, Driver.BA_DD_HYBRID, "Moondrop", SoundSignature.NEUTRAL);
+        InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, Driver.BA_DD_HYBRID, "Moondrop", SoundSignature.V_SHAPE);
         InEarMonitor iem2 = new InEarMonitor("TruthEar Hexa", 999.99, Driver.TRIBID, "TruthEar", SoundSignature.WARM_NEUTRAL);
         InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99,Driver.PLANAR, "7Hz", SoundSignature.BRIGHT);
-        InEarMonitor iem4 = new InEarMonitor("Moondrop Variations", 520.00,Driver.TRIBID, "Moondrop", SoundSignature.BRIGHT);
+        InEarMonitor iem4 = new InEarMonitor("Moondrop Variations", 520.00,Driver.TRIBID, "Moondrop", SoundSignature.BASSY);
         InEarMonitor iem5 = new InEarMonitor("Letshuoer S12", 119.00,Driver.PLANAR, "Letshuoer", SoundSignature.NEUTRAL);
         InEarMonitor iem6 = new InEarMonitor("Kiwi Ears Quintet", 219.00, Driver.BA, "Kiwi Ears", SoundSignature.WARM_NEUTRAL);
         InEarMonitor iem7 = new InEarMonitor("Tanchjim Oxygen", 269.00, Driver.DYNAMIC, "Tanchjim", SoundSignature.BRIGHT);
-        InEarMonitor iem8 = new InEarMonitor("Dunu SA6 MKII", 579.00, Driver.DUAL_DYNAMIC, "Dunu", SoundSignature.NEUTRAL);
+        InEarMonitor iem8 = new InEarMonitor("Dunu SA6 MKII", 579.00, Driver.DUAL_DYNAMIC, "Dunu", SoundSignature.BRIGHT_NEUTRAL);
 
         CarryBag bag1 = new CarryBag("MoonDrop C2023", 59.99, "Moondrop", 10, 8, 5);
         CarryBag bag2 = new CarryBag("Tripowin Case", 19.99, "Tripowin", 7, 6, 3);
@@ -510,6 +510,18 @@ class Store{
                 }
             }
         return IEMList;
+    }
+
+    public ObservableList<StockItem> getFilteredBySoundSignatureList(SoundSignature soundSignature) {
+        ObservableList<StockItem> filteredList = FXCollections.observableArrayList();
+        for (StockItem item : getIEMList()) {
+            InEarMonitor iem = (InEarMonitor) item.getProduct();
+
+            if (iem.getSound() == soundSignature) {
+                filteredList.add(item);
+            }
+        }
+        return filteredList;
     }
 
     public ObservableList<StockItem> getFilteredByBrandList(String brand, ObservableList<StockItem> productList){
