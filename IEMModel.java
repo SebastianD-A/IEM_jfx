@@ -321,7 +321,9 @@ class Order implements Discountable{
 
     private final Customer cust;
 
-    private final LinkedHashMap<Product, Integer> cart = new LinkedHashMap<>();
+    private final SimpleDoubleProperty total = new SimpleDoubleProperty(0);
+
+    private final ObservableList<CartItem> cart = FXCollections.observableArrayList();
 
     private final SimpleObjectProperty<ShippingStatus> status = new SimpleObjectProperty<>(ShippingStatus.PENDING);
 
@@ -331,32 +333,36 @@ class Order implements Discountable{
     }
 
     public void addProduct(Product newProduct, int quantity){
-        if (quantity <= 0){
-            return;
-        }
+        if (quantity <= 0) return;
 
-        if (cart.containsKey(newProduct)){
-            int currentQty = cart.get(newProduct);
-            cart.put(newProduct, currentQty + quantity);
-        } 
-        else{
-            cart.put(newProduct, quantity);
-        }
+        for (CartItem item : cart) {
+            if (item.getProduct().equals(newProduct)) {
+                item.getQuantityProperty().set(item.getQuantity() + quantity);
+                return;
+            }
+    }
+
+    cart.add(new CartItem(newProduct, quantity));
     }
 
     public void removeProduct(Product product, int quantity){
-        if (!cart.containsKey(product)){
-            return;
+        CartItem target = null;
+
+        for (CartItem item : cart) {
+            if (item.getProduct().equals(product)) {
+                int newQty = item.getQuantity() - quantity;
+
+                if (newQty <= 0) {
+                    target = item;
+                } 
+                else {
+                    item.getQuantityProperty().set(newQty);
+                }
+            }
         }
 
-        int currentQty = cart.get(product);
-
-        if (quantity >= currentQty){
-            cart.remove(product);
-        }
-
-        else{
-            cart.put(product, currentQty - quantity);
+        if (target != null){
+            cart.remove(target);
         }
     }
 
@@ -364,18 +370,8 @@ class Order implements Discountable{
         cart.clear();
     }
 
-    public LinkedHashMap<Product, Integer> getCart(){
+    public ObservableList<CartItem> getCart(){
         return cart;
-    }
-
-    public ObservableList<CartItem> getCartItems(){
-        ObservableList<CartItem> list = FXCollections.observableArrayList();
-
-        for (Map.Entry<Product, Integer> entry : cart.entrySet()){
-            list.add(new CartItem(entry.getKey(), entry.getValue()));
-        }
-
-        return list;
     }
 
     public ShippingStatus getStatus(){
@@ -398,14 +394,20 @@ class Order implements Discountable{
         return orderID;
     }
 
-    public double getTotal(){
-        double total = 0;
-
-        for (Map.Entry<Product, Integer> entry : cart.entrySet()){
-            total += entry.getKey().getPriceValue() * entry.getValue();
-        }
-
+    public SimpleDoubleProperty totalProperty() {
         return total;
+    }
+
+    public double getTotal() {
+        return total.get();
+    }
+    
+    public void updateTotal() {
+        double newTotal = 0.0;
+        for (CartItem item : cart) {
+            newTotal += item.getProduct().getPriceValue() * item.getQuantity();
+        }
+        total.set(newTotal);
     }
 
     @Override
@@ -454,13 +456,18 @@ class CartItem{
         return quantity.get();
     }
 
-    public SimpleIntegerProperty quantityProperty(){
+    public SimpleIntegerProperty getQuantityProperty(){
         return quantity;
     }
 
     public Product getProduct(){
         return product;
     }
+
+    public void setQuantity(int qty){
+    this.quantity.set(qty);
+}
+    
 }
 
 class StockItem{

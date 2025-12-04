@@ -523,6 +523,96 @@ public class IEMView {
         stage.show();
     }
     private void viewCart(){
+        Stage stage = new Stage();
+        stage.initOwner(primaryStage);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+
+        //table
+        TableView<CartItem> table = new TableView<>();
+        table.setItems(model.getOrder().getCart());
+
+        TableColumn<CartItem, String> nameCol = new TableColumn<>("Name");
+        nameCol.setCellValueFactory(c -> c.getValue().getProduct().getNameProperty());
+
+        TableColumn<CartItem, String> brandCol = new TableColumn<>("Brand");
+        brandCol.setCellValueFactory(c -> c.getValue().getProduct().getBrandProperty());
+
+        TableColumn<CartItem, Number> priceCol = new TableColumn<>("Price");
+        priceCol.setCellValueFactory(c -> c.getValue().getProduct().getPriceProperty());
+
+        TableColumn<CartItem, Number> qtyCol = new TableColumn<>("Quantity");
+        qtyCol.setCellValueFactory(c -> c.getValue().getQuantityProperty());
+
+        TableColumn<CartItem, Number> subtotalCol = new TableColumn<>("Subtotal");
+        subtotalCol.setCellValueFactory(c -> {
+            CartItem item = c.getValue();
+            return item.getQuantityProperty().multiply(item.getProduct().getPriceProperty());
+            }
+        );
+    
+        table.getColumns().addAll(nameCol, brandCol, priceCol, qtyCol, subtotalCol);
+        
+        //total cost label
+        Label totalLabel = new Label();
+        totalLabel.textProperty().bind(model.getOrder().totalProperty().asString("Total: $%.2f"));
+
+        //add 1 to cart
+        Button addOneBtn = new Button("Add 1");
+        addOneBtn.setOnAction(e -> {
+            CartItem selected = model.getOrder().getCart().get(table.getSelectionModel().getSelectedIndex());
+            if (selected != null) {
+                Product p = selected.getProduct();
+                int stock = model.getStore().getQuantity(p);
+
+                if (selected.getQuantity() < stock) {
+                    selected.setQuantity(selected.getQuantity() + 1);
+                    model.getOrder().updateTotal();
+                } 
+                else {
+                    System.out.println("Not enough stock!");
+                }
+            }
+        });
+        //remove 1 from the cart
+        Button removeOneBtn = new Button("Remove 1");
+        removeOneBtn.setOnAction(e -> {
+        CartItem selected = model.getOrder().getCart().get(table.getSelectionModel().getSelectedIndex());
+            if (selected != null) {
+                if (selected.getQuantity() > 1) {
+                    selected.setQuantity(selected.getQuantity() - 1);
+                } 
+                else {
+                    model.getOrder().getCart().remove(selected);
+                }
+                model.getOrder().updateTotal();
+            }
+        });
+        //remove it entirely
+        Button removeEntryBtn = new Button("Remove Entry");
+        removeEntryBtn.setOnAction(e -> {
+            CartItem selected = model.getOrder().getCart().get(table.getSelectionModel().getSelectedIndex());
+            if (selected != null) {
+                model.getOrder().getCart().remove(selected);
+                model.getOrder().updateTotal();
+            }
+        });
+        //clear ever
+        Button clearCartBtn = new Button("Clear Cart");
+        clearCartBtn.setOnAction(e -> {
+            model.getOrder().getCart().clear();
+            model.getOrder().updateTotal();
+        });
+
+        HBox buttonRow = new HBox(10, addOneBtn, removeOneBtn, removeEntryBtn, clearCartBtn);
+        buttonRow.setAlignment(Pos.CENTER);
+
+        root.getChildren().addAll(table, buttonRow, totalLabel);
+
+        stage.setScene(new Scene(root, 700, 500));
+        stage.show();
 
     }
 

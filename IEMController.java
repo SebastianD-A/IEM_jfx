@@ -66,22 +66,35 @@ public class IEMController {
     }
 
     public int getCartQuantity(Product p) {
-    if (model.getOrder().getCart().containsKey(p)) {
-        return model.getOrder().getCart().get(p);
-    } 
-    else {
+    if (p == null){
         return 0;
     }
+    for (CartItem item : model.getOrder().getCart()) {
+        if (item.getProduct().equals(p)) {
+            return item.getQuantity();
+        }
+    }
+    return 0;
 }
+
     public void checkout() {
         Order order = model.getOrder();
 
-        for (Map.Entry<Product, Integer> entry : order.getCart().entrySet()) {
-            Product p = entry.getKey();
-            int qty = entry.getValue();
+        Store store = model.getStore();
 
-            model.getStore().sellProduct(p.getNameValue(), qty);
+        for (CartItem item : order.getCart()) {
+            Product p = item.getProduct();
+            int qty = item.getQuantity();
+
+            store.sellProduct(p.getNameValue(), qty);
         }
+
+        order.setStatus(ShippingStatus.PENDING);
+        model.getCustomer().addOrder(order);
+
+        model.incrementOrderID();
+        Order newOrder = new Order(model.getCustomer(), model.getOrderID());
+        model.setOrder(newOrder);
     }
     public void addToCart(Product product, String qtyString) {
         int qtyToAdd = convertStringToInt(qtyString);
@@ -99,8 +112,8 @@ public class IEMController {
             return;
         }
 
-        // safe to add
         model.getOrder().addProduct(product, qtyToAdd);
+        model.getOrder().updateTotal();
     }
     
 
