@@ -318,6 +318,10 @@ class Customer{
 
 class Order implements Discountable{
     private final SimpleIntegerProperty orderID;
+    
+    private SimpleDoubleProperty discount = new SimpleDoubleProperty(0);
+    
+    private SimpleDoubleProperty finalTotal = new SimpleDoubleProperty(0);
 
     private final Customer cust;
 
@@ -401,7 +405,13 @@ class Order implements Discountable{
     public double getTotal() {
         return total.get();
     }
-    
+    public SimpleDoubleProperty discountProperty() {
+        return discount;
+    }
+
+    public SimpleDoubleProperty finalTotalProperty() { 
+        return finalTotal; 
+    }
     public void updateTotal() {
         double newTotal = 0.0;
         for (CartItem item : cart) {

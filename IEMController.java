@@ -114,6 +114,7 @@ public class IEMController {
 
         model.getOrder().addProduct(product, qtyToAdd);
         model.getOrder().updateTotal();
+        
     }
     
 

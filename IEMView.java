@@ -29,6 +29,8 @@ public class IEMView {
 
     private Stage primaryStage;
 
+    //used to tell the user what they added and how much to their cart later
+
     private VBox view;
 
     public IEMView(IEMController controller, IEMModel model, Stage primaryStage){
@@ -40,11 +42,14 @@ public class IEMView {
         
         this.view = new VBox(10);
         this.view.setAlignment(Pos.CENTER);
+
         
         login();
 
 
     }
+
+    
     //configure text fields
     private void configTextFieldForInts(TextField field) {
         field.setTextFormatter(new TextFormatter<Integer>((Change c) -> {
@@ -89,18 +94,6 @@ public class IEMView {
 
         HBox rankRow = new HBox(5, new Label("Rank: "), noneBtn, basicBtn, premiumBtn, audiophileBtn);
         rankRow.setAlignment(Pos.CENTER);
-
-        //staff or not
-        ToggleGroup userTypeGroup = new ToggleGroup();
-
-        RadioButton staffBtn = new RadioButton("Staff");
-        staffBtn.setToggleGroup(userTypeGroup);
-
-        RadioButton customerBtn = new RadioButton("Customer");
-        customerBtn.setToggleGroup(userTypeGroup);
-
-        HBox userTypeRow = new HBox(5, new Label("Type of person: "), staffBtn, customerBtn);
-        userTypeRow.setAlignment(Pos.CENTER);
         
         //submit
         Button loginBtn = new Button("Login");
@@ -125,17 +118,10 @@ public class IEMView {
                 rank = CustomerRank.AUDIOPHILE;
             }
 
-            //staff
-            if (staffBtn.isSelected()){
-                controller.loginStaff();
-                staffMenu();
-            }
-            else{
                 controller.loginCustomer(name, rank);
                 customerMainMenu();
-            }
         });
-        view.getChildren().addAll(nameRow, rankRow, userTypeRow, loginBtn);
+        view.getChildren().addAll(nameRow, rankRow, loginBtn);
     }
 
     //customer menus
@@ -209,6 +195,7 @@ public class IEMView {
             });
 
             Label filterBrandLabel = new Label("Filter by Brand:");
+            Label addText =  new Label();
             
             ToggleGroup brandGroup = new ToggleGroup();
 
@@ -292,10 +279,12 @@ public class IEMView {
                 }
 
                 controller.addToCart(item, qtyString);
-                
+                addText.setText("Added " + qtyString + " " + item.getNameValue());
             });
 
-            root.getChildren().addAll(title, table, filterBrandLabel, brandRow, filterByBrandBtn, addToCartRow, addToCartBtn);
+            
+
+            root.getChildren().addAll(title, table, filterBrandLabel, brandRow, filterByBrandBtn, addToCartRow, addToCartBtn, addText);
         }
         //setup IEM table for customer view
         private void showIEMTableInPopup(VBox root, Stage popup) {
@@ -465,6 +454,7 @@ public class IEMView {
             itemQtyRow.setAlignment(Pos.CENTER);
 
             Button addToCartBtn = new Button("Add to cart");
+            Label addText =  new Label();
             addToCartBtn.setOnAction(event -> {
                 StockItem selected = model.getStore().getCarryBagList().get(table.getSelectionModel().getSelectedIndex());
 
@@ -481,9 +471,10 @@ public class IEMView {
                 }
 
                 controller.addToCart(item, qtyString);
+                addText.setText("Added " + qtyString + " " + item.getNameValue());
                 
             });
-            root.getChildren().addAll(title, table, filterSoundSigLabel, soundSignatureRow, filterBySoundSigBtn,filterBrandLabel, brandRow, filterByBrandBtn, itemQtyRow, addToCartBtn);
+            root.getChildren().addAll(title, table, filterSoundSigLabel, soundSignatureRow, filterBySoundSigBtn,filterBrandLabel, brandRow, filterByBrandBtn, itemQtyRow, addToCartBtn, addText);
         }
     private void custViewProducts(){
         Stage stage = new Stage();
@@ -617,9 +608,61 @@ public class IEMView {
     }
 
     private void checkoutMenu(){
+        Stage stage = new Stage();
+        stage.initOwner(primaryStage);
+        stage.initModality(Modality.APPLICATION_MODAL);
 
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+
+                TableView<CartItem> table = new TableView<>();
+        table.setItems(model.getOrder().getCart());
+
+        TableColumn<CartItem, String> nameCol = new TableColumn<>("Name");
+        nameCol.setCellValueFactory(c -> c.getValue().getProduct().getNameProperty());
+
+        TableColumn<CartItem, String> brandCol = new TableColumn<>("Brand");
+        brandCol.setCellValueFactory(c -> c.getValue().getProduct().getBrandProperty());
+
+        TableColumn<CartItem, Number> priceCol = new TableColumn<>("Price");
+        priceCol.setCellValueFactory(c -> c.getValue().getProduct().getPriceProperty());
+
+        TableColumn<CartItem, Number> qtyCol = new TableColumn<>("Quantity");
+        qtyCol.setCellValueFactory(c -> c.getValue().getQuantityProperty());
+
+        TableColumn<CartItem, Number> subtotalCol = new TableColumn<>("Subtotal");
+        subtotalCol.setCellValueFactory(c -> {
+            CartItem item = c.getValue();
+            return item.getQuantityProperty().multiply(item.getProduct().getPriceProperty());
+            }
+        );
+    
+        table.getColumns().addAll(nameCol, brandCol, priceCol, qtyCol, subtotalCol);
+        
+        //discount type
+        ToggleGroup discTypeGroup = new ToggleGroup();
+
+        RadioButton percentBtn = new RadioButton("Percentage (%)");
+        percentBtn.setToggleGroup(discTypeGroup);
+
+        RadioButton amountBtn = new RadioButton("Amount ($)");
+        amountBtn.setToggleGroup(discTypeGroup);
+
+
+
+        //discount
+        TextField discountField = new TextField();
+        configTextFieldForInts(discountField);
+        
+
+        HBox discountRow = new HBox(new Label("Discount Amount: "), discountField);
+        discountRow.setAlignment(Pos.CENTER);
+
+        Label totalLabel = new Label();
+
+
+           
     }
-    //Staff menus
-    private void staffMenu(){}
+    
 }
 
