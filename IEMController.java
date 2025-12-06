@@ -50,7 +50,6 @@ public class IEMController {
     public void loginCustomer(String name, CustomerRank rank){
         Customer c = new Customer(name, rank);
         model.setCustomer(c);
-        model.setIsStaff(false);
 
         Order o = new Order(c, model.getOrderID());
         model.setOrder(o);

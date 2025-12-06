@@ -473,7 +473,7 @@ public class IEMView {
             Label addText =  new Label();
             addText.setText(null);
             addToCartBtn.setOnAction(event -> {
-                StockItem selected = model.getStore().getCarryBagList().get(table.getSelectionModel().getSelectedIndex());
+                StockItem selected = model.getStore().getIEMList().get(table.getSelectionModel().getSelectedIndex());
 
                 if (selected == null){
                     return;
