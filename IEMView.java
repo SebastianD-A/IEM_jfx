@@ -520,10 +520,10 @@ public class IEMView {
             showBagTableInPopup(root, stage);
         }
     });
-        HBox productOptions = new HBox(10, new Label("Product Type: "),iemBtn, bagBtn);
+        HBox productOptions = new HBox(10,iemBtn, bagBtn);
         productOptions.setAlignment(Pos.CENTER);
         
-        root.getChildren().addAll(productOptions, doneButton);
+        root.getChildren().addAll(new Label("Product Type"), productOptions, doneButton);
         
         Scene scene = new Scene(root, 700, 700);
 
