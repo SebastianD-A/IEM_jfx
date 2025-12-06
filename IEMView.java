@@ -66,6 +66,21 @@ public class IEMView {
             return null;
         }));
     }
+    private void configTextFieldForDoubles(TextField field) {
+        field.setTextFormatter(new TextFormatter<Double>((Change c) -> {
+            // "-?\\d*" is called a regular expression. For those who are curious:
+            //
+            // - The "-?" indicates that the minus sign is optionally present (we need to
+            // allow for negative integers too)
+            // - "\\d" is a digit character, which matches any digit from 0 to 9.
+            // - The following "*" is a quantifier that means "zero or more occurrences".
+            // - Therefore, \\d* matches a sequence of zero or more digits.
+            if (c.getControlNewText().matches("-?\\d*(\\.\\d*)?")) {
+                return c;
+            }
+            return null;
+        }));
+    }
     public Parent asParent(){
         return view;
     }
@@ -196,6 +211,7 @@ public class IEMView {
 
             Label filterBrandLabel = new Label("Filter by Brand:");
             Label addText =  new Label();
+            addText.setText(null);
             
             ToggleGroup brandGroup = new ToggleGroup();
 
@@ -455,6 +471,7 @@ public class IEMView {
 
             Button addToCartBtn = new Button("Add to cart");
             Label addText =  new Label();
+            addText.setText(null);
             addToCartBtn.setOnAction(event -> {
                 StockItem selected = model.getStore().getCarryBagList().get(table.getSelectionModel().getSelectedIndex());
 
@@ -644,24 +661,60 @@ public class IEMView {
 
         RadioButton percentBtn = new RadioButton("Percentage (%)");
         percentBtn.setToggleGroup(discTypeGroup);
+        
 
         RadioButton amountBtn = new RadioButton("Amount ($)");
         amountBtn.setToggleGroup(discTypeGroup);
 
+        HBox discountTypeRow = new HBox(5, percentBtn, amountBtn);
+        discountTypeRow.setAlignment(Pos.CENTER);
 
+        Button confirmDiscountButton = new Button("Confirm Type of Discount");
+
+        confirmDiscountButton.setOnAction(e -> {
+            
+            if (percentBtn.isSelected()){
+                model.getOrder().setDiscountType(DiscountType.PERCENTAGE);
+            }
+            else if (amountBtn.isSelected()){
+                model.getOrder().setDiscountType(DiscountType.AMOUNT);
+            }
+        }
+        );
 
         //discount
         TextField discountField = new TextField();
-        configTextFieldForInts(discountField);
+        configTextFieldForDoubles(discountField);
+        discountField.textProperty().addListener((obs, oldText, newText) -> {
+            controller.updateDiscount(newText);
+        });
         
+        
+        //cust rank disc
+        Label rankDiscLabel = new Label();
+        rankDiscLabel.setText("Customer Rank Discount: " + model.getCustomer().getRank().getPercentage() + "%");
 
         HBox discountRow = new HBox(new Label("Discount Amount: "), discountField);
         discountRow.setAlignment(Pos.CENTER);
 
+        Button checkoutButton = new Button("Confirm & Checkout");
+        checkoutButton.setOnAction(e -> {
+            if (model.getOrder().getCart().isEmpty()) {
+                System.out.println("Cannot checkout an empty cart!");
+                return;
+            }
+            controller.checkout();
+            stage.close();
+            customerMainMenu(); 
+        });
+
         Label totalLabel = new Label();
-
-
-           
+        totalLabel.textProperty().bind(model.getOrder().finalTotalProperty().asString("Total: $%.2f"));
+        
+        root.getChildren().addAll(table, discountTypeRow, confirmDiscountButton, discountRow, rankDiscLabel, totalLabel, checkoutButton);
+        
+        stage.setScene(new Scene(root, 700, 500));
+        stage.show();
     }
     
 }

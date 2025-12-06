@@ -117,6 +117,27 @@ public class IEMController {
         
     }
     
+    public void updateDiscount(String s){
+        double newValue = convertStringToDouble(s);
+        if (s == null || s.isEmpty()){
+            model.getOrder().setDiscount(0);
+        }
+        else if (model.getOrder().getDiscountType() == DiscountType.PERCENTAGE){
+            if (newValue > 100){
+                newValue = 100;
+            }
+            else if (newValue < 0){
+                newValue = 0;
+            }
+        }
+        else{
+            if (newValue < 0){
+                newValue = 0;
+            }
+        }
+
+        model.getOrder().setDiscount(newValue);
+    }
 
     public void removeFromCart(Product p, int qty){
         model.getOrder().removeProduct(p, qty);
@@ -138,6 +159,15 @@ public class IEMController {
             return 0;
         }
         return Integer.parseInt(s); // Convert string into integer
+    }
+       private double convertStringToDouble(String s) {
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
+        if ("-".equals(s)) {
+            return 0;
+        }
+        return Double.parseDouble(s); // Convert string into integer
     }
 }
 

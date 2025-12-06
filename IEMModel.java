@@ -108,6 +108,12 @@ public class IEMModel{
 }
 
 //enums
+
+enum DiscountType{
+    PERCENTAGE,
+    AMOUNT,
+    NONE
+}
 enum Driver{
     DYNAMIC,
     DUAL_DYNAMIC,
@@ -323,6 +329,8 @@ class Order implements Discountable{
     
     private SimpleDoubleProperty finalTotal = new SimpleDoubleProperty(0);
 
+    private SimpleObjectProperty<DiscountType> discountType = new SimpleObjectProperty<>();
+
     private final Customer cust;
 
     private final SimpleDoubleProperty total = new SimpleDoubleProperty(0);
@@ -334,6 +342,21 @@ class Order implements Discountable{
     public Order(Customer cust, int orderID){
         this.cust = cust;
         this.orderID = new SimpleIntegerProperty(orderID);
+
+        cart.addListener((ListChangeListener<CartItem>) c -> {
+            updateTotal();
+        });
+
+        total.addListener((obs, oldVal, newVal) -> updateFinalTotal());
+
+        discount.addListener((obs, oldVal, newVal) -> updateFinalTotal());
+
+        discountType.addListener((obs, oldVal, newVal) -> updateFinalTotal());
+
+        cust.getRankProperty().addListener((obs, oldVal, newVal) -> updateFinalTotal());
+        
+        updateTotal(); 
+        updateFinalTotal();
     }
 
     public void addProduct(Product newProduct, int quantity){
@@ -349,6 +372,21 @@ class Order implements Discountable{
     cart.add(new CartItem(newProduct, quantity));
     }
 
+    public SimpleObjectProperty<DiscountType> getDiscountProperty(){
+        return this.discountType;
+    }
+
+    public DiscountType getDiscountType(){
+        return this.discountType.getValue();
+    }
+
+    public void setDiscountType(DiscountType newType){
+        this.discountType.set(newType);
+    }
+
+    public void setDiscount(double newVal){
+        this.discount.set(newVal);
+    }
     public void removeProduct(Product product, int quantity){
         CartItem target = null;
 
@@ -394,7 +432,7 @@ class Order implements Discountable{
         return orderID.get();
     }
 
-    public SimpleIntegerProperty getOrderIDProperty(){
+    public SimpleIntegerProperty OrderIDProperty(){
         return orderID;
     }
 
@@ -442,6 +480,27 @@ class Order implements Discountable{
         double discount = setAmount + (total * (cust.getRank().getPercentage() / 100));
 
         return total - discount;
+    }
+    public void updateFinalTotal() {
+        double currentTotal = getTotal();
+        double finalPrice;
+
+        DiscountType type = getDiscountType();
+        double discountValue = discount.get();
+
+        // Check which type of discount to apply
+        if (type == DiscountType.PERCENTAGE || type == DiscountType.NONE) {
+            finalPrice = applyDiscount(discountValue);
+
+        } 
+        else if (type == DiscountType.AMOUNT) {
+            finalPrice = applyDiscount((int) discountValue);
+        } 
+        else {
+            finalPrice = currentTotal - (currentTotal * (cust.getRank().getPercentage() / 100));
+        }
+
+        finalTotal.set(finalPrice);
     }
 }
 
